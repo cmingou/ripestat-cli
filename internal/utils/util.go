@@ -31,3 +31,10 @@ func CnovertStringToIp(str string) (netip.Addr, error) {
 
 	return ipAddress, nil
 }
+
+func PrintInvalidArgs(invalidSlice []string) {
+	fmt.Printf("Invalid argument:\n")
+	for _, invalid := range invalidSlice {
+		fmt.Printf("%v\n", invalid)
+	}
+}
