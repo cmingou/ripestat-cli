@@ -93,3 +93,44 @@ type PrefixRoutingConsistency struct {
 	StatusCode   int    `json:"status_code"`
 	Time         string `json:"time"`
 }
+
+type MaxmindGeoLite struct {
+	Messages       []interface{} `json:"messages"`
+	SeeAlso        []interface{} `json:"see_also"`
+	Version        string        `json:"version"`
+	DataCallName   string        `json:"data_call_name"`
+	DataCallStatus string        `json:"data_call_status"`
+	Cached         bool          `json:"cached"`
+	Data           struct {
+		LocatedResources []struct {
+			Resource  string `json:"resource"`
+			Locations []struct {
+				Country           string   `json:"country"`
+				City              string   `json:"city"`
+				Resources         []string `json:"resources"`
+				Latitude          float64  `json:"latitude"`
+				Longitude         float64  `json:"longitude"`
+				CoveredPercentage float64  `json:"covered_percentage"`
+			} `json:"locations"`
+			UnknownPercentage int `json:"unknown_percentage"`
+		} `json:"located_resources"`
+		UnknownPercentage struct {
+			V4 float64 `json:"v4"`
+		} `json:"unknown_percentage"`
+		ResultTime   string `json:"result_time"`
+		LatestTime   string `json:"latest_time"`
+		EarliestTime string `json:"earliest_time"`
+		Parameters   struct {
+			Resource   string      `json:"resource"`
+			Resolution string      `json:"resolution"`
+			Cache      interface{} `json:"cache"`
+		} `json:"parameters"`
+	} `json:"data"`
+	QueryID      string `json:"query_id"`
+	ProcessTime  int    `json:"process_time"`
+	ServerID     string `json:"server_id"`
+	BuildVersion string `json:"build_version"`
+	Status       string `json:"status"`
+	StatusCode   int    `json:"status_code"`
+	Time         string `json:"time"`
+}

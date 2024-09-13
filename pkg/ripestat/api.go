@@ -58,6 +58,44 @@ func GetPrefixRoutingConsistency(resource string) (*PrefixRoutingConsistency, er
 	return &prefixRoutingConsistency, nil
 }
 
+func GetMaxmindGeoLite(resource string) (*MaxmindGeoLite, error) {
+	url := fmt.Sprintf("https://stat.ripe.net/data/maxmind-geo-lite/data.json?resource=%v", resource)
+
+	body, err := getHttpGetResponse(url)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get HTTP GET response: %v", err)
+	}
+
+	var maxmindGeoLite MaxmindGeoLite
+	err = json.Unmarshal(body, &maxmindGeoLite)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	return &maxmindGeoLite, nil
+}
+
+func GetIpGeoLocation(resource string) (string, error) {
+	ipLocation := ""
+	locationRsp, err := GetMaxmindGeoLite(resource)
+	if err != nil {
+		return "", fmt.Errorf("Failed to get Maxmind GeoLite: %v\n", err)
+	}
+
+	if locationRsp.Data.LocatedResources != nil {
+		if locationRsp.Data.LocatedResources[0].Locations != nil {
+			city := locationRsp.Data.LocatedResources[0].Locations[0].City
+			country := locationRsp.Data.LocatedResources[0].Locations[0].Country
+			if len(city) != 0 && len(country) != 0 {
+				ipLocation = fmt.Sprintf("%v, %v", city, country)
+			} else if len(city) == 0 && len(country) != 0 {
+				ipLocation = fmt.Sprintf("%v", country)
+			}
+		}
+	}
+	return ipLocation, nil
+}
+
 func getHttpGetResponse(url string) ([]byte, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)

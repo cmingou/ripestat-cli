@@ -57,19 +57,16 @@ var rootCmd = &cobra.Command{
 		}
 
 		if len(asnSlice) > 0 {
-			fmt.Printf("## ASN\n")
 			utils.SearchAsnInfo(asnSlice)
 			fmt.Printf("\n")
 		}
 
 		if len(ipv4Slice) > 0 {
-			fmt.Printf("## IPv4\n")
 			utils.SearchIpv4Info(ipv4Slice)
 			fmt.Printf("\n")
 		}
 
 		if len(ipv6Slice) > 0 {
-			fmt.Printf("## IPv6\n")
 			utils.SearchIpv6Info(ipv6Slice)
 			fmt.Printf("\n")
 		}

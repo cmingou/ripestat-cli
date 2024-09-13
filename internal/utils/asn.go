@@ -35,6 +35,6 @@ func SearchAsnInfo(asns []int) {
 			table.Append([]string{asOverview.Data.Resource, rir.Data.Rirs[0].Country, rir.Data.Rirs[0].Rir, asOverview.Data.Holder})
 		}
 	}
-
+	fmt.Printf("## ASN\n")
 	table.Render()
 }
