@@ -82,8 +82,8 @@ func GetIpGeoLocation(resource string) (string, error) {
 		return "", fmt.Errorf("Failed to get Maxmind GeoLite: %v\n", err)
 	}
 
-	if locationRsp.Data.LocatedResources != nil {
-		if locationRsp.Data.LocatedResources[0].Locations != nil {
+	if locationRsp.Data.LocatedResources != nil && len(locationRsp.Data.LocatedResources) > 0 {
+		if locationRsp.Data.LocatedResources[0].Locations != nil && len(locationRsp.Data.LocatedResources[0].Locations) > 0 {
 			city := locationRsp.Data.LocatedResources[0].Locations[0].City
 			country := locationRsp.Data.LocatedResources[0].Locations[0].Country
 			if len(city) != 0 && len(country) != 0 {
