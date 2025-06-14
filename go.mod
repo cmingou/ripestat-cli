@@ -1,6 +1,6 @@
 module github.com/cmingou/ripestat-cli
 
-go 1.22.4
+go 1.24.2
 
 require (
 	github.com/olekukonko/tablewriter v0.0.5

@@ -104,7 +104,8 @@ go build -o ripestat main.go
 ```
 ├── main.go              # 進入點
 ├── cmd/
-│   └── root.go         # 主要指令邏輯 (Cobra CLI)
+│   ├── root.go         # 主要指令邏輯 (Cobra CLI)
+│   └── root_test.go    # 輸入驗證函式測試
 ├── pkg/
 │   └── ripestat/       # API 客戶端套件
 │       ├── api.go      # HTTP 客戶端函式
@@ -114,7 +115,8 @@ go build -o ripestat main.go
         ├── asn.go      # ASN 查詢
         ├── ipv4.go     # IPv4 查詢
         ├── ipv6.go     # IPv6 查詢
-        └── util.go     # 通用工具
+        ├── util.go     # 通用工具
+        └── util_test.go # 工具函式測試
 ```
 
 ## 相依性

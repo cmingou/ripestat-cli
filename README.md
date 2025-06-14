@@ -104,7 +104,8 @@ go build -o ripestat main.go
 ```
 ├── main.go              # Entry point
 ├── cmd/
-│   └── root.go         # Main command logic (Cobra CLI)
+│   ├── root.go         # Main command logic (Cobra CLI)
+│   └── root_test.go    # Tests for input validation functions
 ├── pkg/
 │   └── ripestat/       # API client package
 │       ├── api.go      # HTTP client functions
@@ -114,7 +115,8 @@ go build -o ripestat main.go
         ├── asn.go      # ASN queries
         ├── ipv4.go     # IPv4 queries
         ├── ipv6.go     # IPv6 queries
-        └── util.go     # Common utilities
+        ├── util.go     # Common utilities
+        └── util_test.go # Tests for utility functions
 ```
 
 ## Dependencies
