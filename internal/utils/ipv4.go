@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/cmingou/ripestat-cli/pkg/ripestat"
+	"github.com/cmingou/ripestat-cli/internal/ripestat"
 	"github.com/olekukonko/tablewriter"
 )
 

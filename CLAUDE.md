@@ -12,9 +12,9 @@ ripestat-cli is a Go-based command-line tool that provides a wrapper for the RIP
 - **cmd/root.go**: Main command logic using Cobra CLI framework
   - Parses input arguments to identify ASNs, IPv4, and IPv6 addresses
   - Routes queries to appropriate utility functions
-- **pkg/ripestat/**: API client package
+- **internal/ripestat/**: API client package
   - `api.go`: HTTP client functions for RIPEstat API endpoints
-  - `struts.go`: Go structs for JSON response unmarshaling
+  - `structs.go`: Go structs for JSON response unmarshaling
 - **internal/utils/**: Utility functions for different resource types
   - `asn.go`: ASN information queries
   - `ipv4.go`: IPv4 address queries  
@@ -36,6 +36,24 @@ make test
 
 # Lint code
 make lint
+```
+
+### Testing
+```bash
+# Run all tests
+go test ./... -v
+
+# Run CLI functionality tests (end-to-end)
+go test ./cmd/ -v
+
+# Run business logic tests  
+go test ./internal/utils/ -v
+
+# Run API client tests
+go test ./internal/ripestat/ -v
+
+# Quick CLI functionality check
+./test_cli.sh
 ```
 
 ### Building
