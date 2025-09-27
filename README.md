@@ -152,6 +152,25 @@ make lint                              # Code linting
 
 RIPEstat limits each IP address to eight concurrent requests. The CLI batches lookups with that cap by default. Adjust the concurrency ceiling with the `--max-concurrency` flag or the `RIPESTAT_MAX_CONCURRENCY` environment variable; both values are clamped between 1 and 8.
 
+### Network optimizations
+
+- **HTTP/2 by default** – the shared client negotiates HTTP/2 (via `golang.org/x/net/http2`) and keeps a single connection multiplexed up to the RIPEstat per-IP limit.
+- **Fine-tuned pooling** – idle and active connection caps mirror the 8-stream concurrency guard so the transport does not overrun provider limits.
+- **Debug visibility** – export `RIPESTAT_DEBUG_HTTP=1` to log the protocol negotiated per request (e.g. `proto=HTTP/2.0`) to stderr without changing CLI output.
+- **Sanity check support** – verify the upstream endpoint with `curl --http2 -I https://stat.ripe.net` (network access required) before attributing slowdowns to the client.
+- **Local benchmarking** – run `./bench_http2.sh ./ripestat 13335 15169 8.8.8.8` (or your own dataset) to compare cold vs warm HTTP/2 runs; override `BENCH_RUNS` or `RIPESTAT_MAX_CONCURRENCY` to probe different loads.
+
+### HTTP/2 diagnostics
+
+```bash
+# Enable protocol logging while exercising the CLI
+RIPESTAT_DEBUG_HTTP=1 ./ripestat 8.8.8.8 13335
+
+# Isolated unit probe (skips automatically if the sandbox blocks loopback listeners)
+GOCACHE=$(pwd)/.gocache go test ./internal/ripestat -run TestGetHttpGetResponseUsesHTTP2 -v
+```
+
+If the test reports a skip, the local sandbox denied creating the loopback HTTP/2 server; re-run on a developer machine to observe the full negotiation log.
 ### Project Structure
 
 ```
@@ -222,11 +241,14 @@ The test suite covers:
 |---------|---------|---------|
 | [github.com/spf13/cobra](https://github.com/spf13/cobra) | CLI framework and command parsing | Apache 2.0 |
 | [github.com/olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) | ASCII table formatting | MIT |
+| [golang.org/x/net](https://golang.org/x/net) | HTTP/2 transport support and network utilities | BSD-3-Clause |
 | **Standard Go Libraries** | HTTP client, JSON parsing, networking | BSD-3-Clause |
 
 ## Performance
 
 - **Concurrent API calls** for multiple inputs
+- **HTTP/2 connection multiplexing** for reduced latency
+- **Fine-tuned connection pooling** respecting RIPEstat quotas
 - **Response caching** where appropriate
 - **Optimized table rendering** for large datasets
 - **Minimal memory footprint** (~10MB runtime)

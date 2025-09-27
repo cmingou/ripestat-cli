@@ -25,16 +25,39 @@ func SearchIpv4Info(ipv4s []netip.Addr) {
 	results, err := runWithConcurrency(context.Background(), ipv4s, func(ctx context.Context, idx int, ip netip.Addr) ([][]string, error) {
 		resource := ip.String()
 
-		ipLocation, err := ripestat.GetIpGeoLocation(resource)
-		if err != nil {
-			return nil, fmt.Errorf("%s: failed to get Geo location: %w", resource, err)
+		var (
+			ipLocation         string
+			ipLocationErr      error
+			routingConsistency *ripestat.PrefixRoutingConsistency
+			routingErr         error
+		)
+
+		done := make(chan struct{}, 2)
+		go func() {
+			ipLocation, ipLocationErr = ripestat.GetIpGeoLocation(resource)
+			done <- struct{}{}
+		}()
+		go func() {
+			routingConsistency, routingErr = ripestat.GetPrefixRoutingConsistency(resource)
+			done <- struct{}{}
+		}()
+
+		for i := 0; i < 2; i++ {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-done:
+			}
 		}
 
-		rsp, err := ripestat.GetPrefixRoutingConsistency(resource)
-		if err != nil {
-			return nil, fmt.Errorf("%s: failed to get routing consistency: %w", resource, err)
+		if ipLocationErr != nil {
+			return nil, fmt.Errorf("%s: failed to get Geo location: %w", resource, ipLocationErr)
+		}
+		if routingErr != nil {
+			return nil, fmt.Errorf("%s: failed to get routing consistency: %w", resource, routingErr)
 		}
 
+		rsp := routingConsistency
 		rows := make([][]string, 0, len(rsp.Data.Routes))
 		for routeIdx, route := range rsp.Data.Routes {
 			asnName := strings.TrimSpace(route.AsnName)

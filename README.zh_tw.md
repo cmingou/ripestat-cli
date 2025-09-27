@@ -230,6 +230,22 @@ go test ./... -cover
 - **最佳化表格渲染**處理大型資料集
 - **最小記憶體佔用** (~10MB 執行時)
 
+### 網路優化
+
+- **預設啟用 HTTP/2**：共用客戶端透過 `golang.org/x/net/http2` 自動協商 H2，並以單一連線多工符合 RIPEstat 的 8 併發上限。
+- **連線池調校**：空閒連線與主機併發上限與 CLI 併發旗標保持一致，避免超出來源 IP 配額。
+- **除錯能見度**：設定 `RIPESTAT_DEBUG_HTTP=1`，即可在 stderr 觀察每個請求協定（例如 `proto=HTTP/2.0`），不影響表格輸出。
+- **上游確認**：在可連網環境執行 `curl --http2 -I https://stat.ripe.net`，先確認伺服端支援 H2 再追查效能問題。
+- **效能基準腳本**：使用 `./bench_http2.sh ./ripestat 13335 15169 8.8.8.8`（可透過 `BENCH_RUNS`、`RIPESTAT_MAX_CONCURRENCY` 自行調整）建立冷／熱啟動比較。
+
+```bash
+# 啟用 HTTP/2 協商紀錄
+RIPESTAT_DEBUG_HTTP=1 ./ripestat 8.8.8.8 13335
+
+# HTTP/2 客戶端測試（若沙箱禁止 loopback 會自動跳過）
+GOCACHE=$(pwd)/.gocache go test ./internal/ripestat -run TestGetHttpGetResponseUsesHTTP2 -v
+```
+
 ## 錯誤處理
 
 工具優雅地處理各種錯誤情況：

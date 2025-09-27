@@ -18,22 +18,44 @@ func SearchAsnInfo(asns []int) {
 	table.SetAutoWrapText(false)
 
 	results, err := runWithConcurrency(context.Background(), asns, func(ctx context.Context, idx int, asn int) ([][]string, error) {
-		asOverview, err := ripestat.GetAsOverview(asn)
-		if err != nil {
-			return nil, fmt.Errorf("AS%d: failed to get overview: %w", asn, err)
+		var (
+			overview    *ripestat.AsOverview
+			overviewErr error
+			rir         *ripestat.RIR
+			rirErr      error
+		)
+
+		done := make(chan struct{}, 2)
+		go func() {
+			overview, overviewErr = ripestat.GetAsOverview(asn)
+			done <- struct{}{}
+		}()
+		go func() {
+			rir, rirErr = ripestat.GetRIR(strconv.Itoa(asn))
+			done <- struct{}{}
+		}()
+
+		for i := 0; i < 2; i++ {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-done:
+			}
 		}
 
-		rir, err := ripestat.GetRIR(strconv.Itoa(asn))
-		if err != nil {
-			return nil, fmt.Errorf("AS%d: failed to get RIR data: %w", asn, err)
+		if overviewErr != nil {
+			return nil, fmt.Errorf("AS%d: failed to get overview: %w", asn, overviewErr)
+		}
+		if rirErr != nil {
+			return nil, fmt.Errorf("AS%d: failed to get RIR data: %w", asn, rirErr)
 		}
 
 		if len(rir.Data.Rirs) == 0 {
-			return [][]string{{asOverview.Data.Resource, "", "", asOverview.Data.Holder}}, nil
+			return [][]string{{overview.Data.Resource, "", "", overview.Data.Holder}}, nil
 		}
 
 		entry := rir.Data.Rirs[0]
-		return [][]string{{asOverview.Data.Resource, entry.Country, entry.Rir, asOverview.Data.Holder}}, nil
+		return [][]string{{overview.Data.Resource, entry.Country, entry.Rir, overview.Data.Holder}}, nil
 	})
 
 	if err != nil {
