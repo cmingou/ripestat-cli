@@ -148,6 +148,10 @@ make test                              # Run tests via Makefile
 make lint                              # Code linting
 ```
 
+### Concurrency controls
+
+RIPEstat limits each IP address to eight concurrent requests. The CLI batches lookups with that cap by default. Adjust the concurrency ceiling with the `--max-concurrency` flag or the `RIPESTAT_MAX_CONCURRENCY` environment variable; both values are clamped between 1 and 8.
+
 ### Project Structure
 
 ```

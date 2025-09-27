@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -16,23 +17,33 @@ func SearchAsnInfo(asns []int) {
 	table.SetCenterSeparator("|")
 	table.SetAutoWrapText(false)
 
-	for _, as := range asns {
-		asOverview, err := ripestat.GetAsOverview(as)
+	results, err := runWithConcurrency(context.Background(), asns, func(ctx context.Context, idx int, asn int) ([][]string, error) {
+		asOverview, err := ripestat.GetAsOverview(asn)
 		if err != nil {
-			fmt.Printf("Failed to get AS overview: %v\n", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("AS%d: failed to get overview: %w", asn, err)
 		}
 
-		rir, err := ripestat.GetRIR(strconv.Itoa(as))
+		rir, err := ripestat.GetRIR(strconv.Itoa(asn))
 		if err != nil {
-			fmt.Printf("Failed to get RIR: %v\n", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("AS%d: failed to get RIR data: %w", asn, err)
 		}
 
 		if len(rir.Data.Rirs) == 0 {
-			table.Append([]string{asOverview.Data.Resource, "", "", asOverview.Data.Holder})
-		} else {
-			table.Append([]string{asOverview.Data.Resource, rir.Data.Rirs[0].Country, rir.Data.Rirs[0].Rir, asOverview.Data.Holder})
+			return [][]string{{asOverview.Data.Resource, "", "", asOverview.Data.Holder}}, nil
+		}
+
+		entry := rir.Data.Rirs[0]
+		return [][]string{{asOverview.Data.Resource, entry.Country, entry.Rir, asOverview.Data.Holder}}, nil
+	})
+
+	if err != nil {
+		fmt.Printf("Failed to get ASN info: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, rows := range results {
+		for _, row := range rows {
+			table.Append(row)
 		}
 	}
 	fmt.Printf("## ASN\n")

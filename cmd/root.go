@@ -25,17 +25,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	asnSlice     []int
-	ipv4Slice    []netip.Addr
-	ipv6Slice    []netip.Addr
-	invalidSlice []string
-)
+var maxConcurrency int
 
 var rootCmd = &cobra.Command{
 	Use:  "ripestat",
 	Long: `This command will help to check the information about ASN, IPv4 and IPv6 from RIPEstat.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var (
+			asnSlice     []int
+			ipv4Slice    []netip.Addr
+			ipv6Slice    []netip.Addr
+			invalidSlice []string
+		)
+
+		utils.SetMaxConcurrentRequests(maxConcurrency)
 		if utils.CheckArgsNonExist(args) {
 			fmt.Printf("Please check parameter\n")
 			os.Exit(1)
@@ -116,5 +119,6 @@ func Execute() {
 }
 
 func init() {
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	maxConcurrency = utils.GetMaxConcurrentRequests()
+	rootCmd.PersistentFlags().IntVar(&maxConcurrency, "max-concurrency", maxConcurrency, "Maximum concurrent RIPEstat requests (1-8)")
 }

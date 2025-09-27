@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/netip"
 	"os"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/cmingou/ripestat-cli/internal/ripestat"
 	"github.com/olekukonko/tablewriter"
@@ -17,26 +20,56 @@ func SearchIpv4Info(ipv4s []netip.Addr) {
 	table.SetCenterSeparator("|")
 	table.SetAutoWrapText(false)
 
-	for _, ip := range ipv4s {
-		ipLocation, err := ripestat.GetIpGeoLocation(ip.String())
+	var asnNameCache sync.Map
+
+	results, err := runWithConcurrency(context.Background(), ipv4s, func(ctx context.Context, idx int, ip netip.Addr) ([][]string, error) {
+		resource := ip.String()
+
+		ipLocation, err := ripestat.GetIpGeoLocation(resource)
 		if err != nil {
-			fmt.Printf("Failed to get IP Geo Location: %v\n", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("%s: failed to get Geo location: %w", resource, err)
 		}
 
-		rsp, err := ripestat.GetPrefixRoutingConsistency(ip.String())
+		rsp, err := ripestat.GetPrefixRoutingConsistency(resource)
 		if err != nil {
-			fmt.Printf("Failed to get Prefix Routing Consistency: %v\n", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("%s: failed to get routing consistency: %w", resource, err)
 		}
 
-		for idx, route := range rsp.Data.Routes {
-			if idx == 0 {
-				table.Append([]string{rsp.Data.Resource, ipLocation, route.Prefix, strconv.FormatBool(route.InBgp), strconv.Itoa(route.Origin), route.AsnName})
-			} else {
-				table.Append([]string{"", "", route.Prefix, strconv.FormatBool(route.InBgp), strconv.Itoa(route.Origin), route.AsnName})
+		rows := make([][]string, 0, len(rsp.Data.Routes))
+		for routeIdx, route := range rsp.Data.Routes {
+			asnName := strings.TrimSpace(route.AsnName)
+			if asnName == "" || asnName == "-" {
+				if cached, ok := asnNameCache.Load(route.Origin); ok {
+					asnName = cached.(string)
+				} else {
+					overview, err := ripestat.GetAsOverview(route.Origin)
+					if err != nil {
+						return nil, fmt.Errorf("%s: failed to resolve AS name for %d: %w", resource, route.Origin, err)
+					}
+					asnName = overview.Data.Holder
+					asnNameCache.Store(route.Origin, asnName)
+				}
 			}
 
+			row := []string{"", "", route.Prefix, strconv.FormatBool(route.InBgp), strconv.Itoa(route.Origin), asnName}
+			if routeIdx == 0 {
+				row[0] = rsp.Data.Resource
+				row[1] = ipLocation
+			}
+			rows = append(rows, row)
+		}
+
+		return rows, nil
+	})
+
+	if err != nil {
+		fmt.Printf("Failed to get IPv4 info: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, rows := range results {
+		for _, row := range rows {
+			table.Append(row)
 		}
 	}
 	fmt.Printf("## IPv4\n")
