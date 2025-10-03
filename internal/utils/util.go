@@ -65,6 +65,15 @@ func ReadInputFile(filename string) ([]string, error) {
 			continue
 		}
 
+		// Remove inline comments (everything after #)
+		if idx := strings.Index(line, "#"); idx != -1 {
+			line = strings.TrimSpace(line[:idx])
+			// If nothing left after removing comment, skip this line
+			if line == "" {
+				continue
+			}
+		}
+
 		inputs = append(inputs, line)
 	}
 

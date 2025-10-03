@@ -265,9 +265,9 @@ func TestReadInputFile(t *testing.T) {
 			name: "File with inline comments",
 			fileContent: `8.8.8.8
 # This is Google DNS
-1.1.1.1 # This would not be filtered - full line taken
-13335`,
-			expected:    []string{"8.8.8.8", "1.1.1.1 # This would not be filtered - full line taken", "13335"},
+1.1.1.1 # Cloudflare DNS
+13335 # Cloudflare ASN`,
+			expected:    []string{"8.8.8.8", "1.1.1.1", "13335"},
 			expectError: false,
 		},
 	}
