@@ -17,14 +17,14 @@ func TestSearchAsnInfo(t *testing.T) {
 
 	// Test with Cloudflare ASN
 	asns := []int{13335}
-	
+
 	// This will call the real API and print to stdout
 	SearchAsnInfo(asns)
 
 	// Restore stdout and capture output
 	w.Close()
 	os.Stdout = oldStdout
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	output := buf.String()
@@ -49,7 +49,7 @@ func TestSearchAsnInfo(t *testing.T) {
 	}
 }
 
-// TestSearchIpv4Info tests IPv4 information search functionality  
+// TestSearchIpv4Info tests IPv4 information search functionality
 func TestSearchIpv4Info(t *testing.T) {
 	// Capture stdout
 	oldStdout := os.Stdout
@@ -59,13 +59,13 @@ func TestSearchIpv4Info(t *testing.T) {
 	// Test with Google DNS
 	ip, _ := netip.ParseAddr("8.8.8.8")
 	ips := []netip.Addr{ip}
-	
-	SearchIpv4Info(ips)
+
+	SearchIpv4Info(ips, false)
 
 	// Restore stdout and capture output
 	w.Close()
 	os.Stdout = oldStdout
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	output := buf.String()
@@ -100,13 +100,13 @@ func TestSearchIpv6Info(t *testing.T) {
 	// Test with Google IPv6 DNS
 	ip, _ := netip.ParseAddr("2001:4860:4860::8888")
 	ips := []netip.Addr{ip}
-	
-	SearchIpv6Info(ips)
+
+	SearchIpv6Info(ips, false)
 
 	// Restore stdout and capture output
 	w.Close()
 	os.Stdout = oldStdout
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	output := buf.String()
@@ -134,13 +134,13 @@ func TestMultipleAsns(t *testing.T) {
 
 	// Test with multiple ASNs: Cloudflare and Google
 	asns := []int{13335, 15169}
-	
+
 	SearchAsnInfo(asns)
 
 	// Restore stdout and capture output
 	w.Close()
 	os.Stdout = oldStdout
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	output := buf.String()
@@ -184,13 +184,13 @@ func TestMultipleIPs(t *testing.T) {
 	ip1, _ := netip.ParseAddr("8.8.8.8")
 	ip2, _ := netip.ParseAddr("1.1.1.1")
 	ips := []netip.Addr{ip1, ip2}
-	
-	SearchIpv4Info(ips)
+
+	SearchIpv4Info(ips, false)
 
 	// Restore stdout and capture output
 	w.Close()
 	os.Stdout = oldStdout
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	output := buf.String()
@@ -221,13 +221,13 @@ func TestPrintInvalidArgs(t *testing.T) {
 
 	// Test with invalid arguments
 	invalidArgs := []string{"invalid", "not-an-ip", "999.999.999.999"}
-	
+
 	PrintInvalidArgs(invalidArgs)
 
 	// Restore stdout and capture output
 	w.Close()
 	os.Stdout = oldStdout
-	
+
 	var buf bytes.Buffer
 	buf.ReadFrom(r)
 	output := buf.String()
@@ -257,9 +257,9 @@ func TestTableFormatConsistency(t *testing.T) {
 				oldStdout := os.Stdout
 				r, w, _ := os.Pipe()
 				os.Stdout = w
-				
+
 				SearchAsnInfo([]int{13335})
-				
+
 				w.Close()
 				os.Stdout = oldStdout
 				var buf bytes.Buffer
@@ -273,10 +273,10 @@ func TestTableFormatConsistency(t *testing.T) {
 				oldStdout := os.Stdout
 				r, w, _ := os.Pipe()
 				os.Stdout = w
-				
+
 				ip, _ := netip.ParseAddr("8.8.8.8")
-				SearchIpv4Info([]netip.Addr{ip})
-				
+				SearchIpv4Info([]netip.Addr{ip}, false)
+
 				w.Close()
 				os.Stdout = oldStdout
 				var buf bytes.Buffer
@@ -289,12 +289,12 @@ func TestTableFormatConsistency(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output := tt.testFunc()
-			
+
 			// All tables should use | as separator
 			if !strings.Contains(output, "|") {
 				t.Errorf("Expected table to use '|' separator")
 			}
-			
+
 			// Should have proper table structure (multiple lines)
 			lines := strings.Split(output, "\n")
 			nonEmptyLines := 0
@@ -317,9 +317,9 @@ func TestDataAccuracy(t *testing.T) {
 		oldStdout := os.Stdout
 		r, w, _ := os.Pipe()
 		os.Stdout = w
-		
+
 		SearchAsnInfo([]int{13335})
-		
+
 		w.Close()
 		os.Stdout = oldStdout
 		var buf bytes.Buffer
@@ -351,10 +351,10 @@ func TestDataAccuracy(t *testing.T) {
 		oldStdout := os.Stdout
 		r, w, _ := os.Pipe()
 		os.Stdout = w
-		
+
 		ip, _ := netip.ParseAddr("8.8.8.8")
-		SearchIpv4Info([]netip.Addr{ip})
-		
+		SearchIpv4Info([]netip.Addr{ip}, false)
+
 		w.Close()
 		os.Stdout = oldStdout
 		var buf bytes.Buffer
