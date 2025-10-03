@@ -72,19 +72,19 @@ release:
     ### macOS
     ```bash
     # For Intel Macs
-    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Darwin_x86_64.tar.gz | tar xz
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat-cli_Darwin_x86_64.tar.gz | tar xz
 
     # For Apple Silicon (M1/M2/M3)
-    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Darwin_arm64.tar.gz | tar xz
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat-cli_Darwin_arm64.tar.gz | tar xz
     ```
 
     ### Linux
     ```bash
     # For x86_64 (Debian, Ubuntu, CentOS, etc.)
-    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Linux_x86_64.tar.gz | tar xz
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat-cli_Linux_x86_64.tar.gz | tar xz
 
     # For ARM64 (Raspberry Pi, ARM servers, etc.)
-    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Linux_arm64.tar.gz | tar xz
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat-cli_Linux_arm64.tar.gz | tar xz
     ```
 
     Move the binary to your PATH:
