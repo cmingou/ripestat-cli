@@ -28,6 +28,7 @@ import (
 var (
 	maxConcurrency int
 	inputFile      string
+	longestPrefix  bool
 )
 
 var rootCmd = &cobra.Command{
@@ -94,12 +95,12 @@ var rootCmd = &cobra.Command{
 		}
 
 		if len(ipv4Slice) > 0 {
-			utils.SearchIpv4Info(ipv4Slice)
+			utils.SearchIpv4Info(ipv4Slice, longestPrefix)
 			fmt.Printf("\n")
 		}
 
 		if len(ipv6Slice) > 0 {
-			utils.SearchIpv6Info(ipv6Slice)
+			utils.SearchIpv6Info(ipv6Slice, longestPrefix)
 			fmt.Printf("\n")
 		}
 
@@ -151,4 +152,5 @@ func init() {
 	maxConcurrency = utils.GetMaxConcurrentRequests()
 	rootCmd.PersistentFlags().IntVar(&maxConcurrency, "max-concurrency", maxConcurrency, "Maximum concurrent RIPEstat requests (1-8)")
 	rootCmd.PersistentFlags().StringVarP(&inputFile, "file", "f", "", "Read input from file (one IP/ASN per line)")
+	rootCmd.PersistentFlags().BoolVarP(&longestPrefix, "longest-prefix", "l", false, "Show only the longest prefix route")
 }

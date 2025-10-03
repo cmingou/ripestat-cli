@@ -13,7 +13,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func SearchIpv6Info(ipv6s []netip.Addr) {
+func SearchIpv6Info(ipv6s []netip.Addr, longestPrefix bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"IP", "Location", "Prefix", "In BGP", "AS Number", "AS Name"})
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
@@ -35,8 +35,23 @@ func SearchIpv6Info(ipv6s []netip.Addr) {
 			return nil, fmt.Errorf("%s: failed to get routing consistency: %w", resource, err)
 		}
 
-		rows := make([][]string, 0, len(rsp.Data.Routes))
-		for routeIdx, route := range rsp.Data.Routes {
+		// Filter to longest prefix if flag is set
+		var routesToProcess []int
+		if longestPrefix {
+			longestIdx := FindLongestPrefixIndex(rsp)
+			if longestIdx != -1 {
+				routesToProcess = []int{longestIdx}
+			}
+		} else {
+			routesToProcess = make([]int, len(rsp.Data.Routes))
+			for i := range rsp.Data.Routes {
+				routesToProcess[i] = i
+			}
+		}
+
+		rows := make([][]string, 0, len(routesToProcess))
+		for i, routeIdx := range routesToProcess {
+			route := rsp.Data.Routes[routeIdx]
 			asnName := strings.TrimSpace(route.AsnName)
 			if asnName == "" || asnName == "-" {
 				if cached, ok := asnNameCache.Load(route.Origin); ok {
@@ -52,7 +67,7 @@ func SearchIpv6Info(ipv6s []netip.Addr) {
 			}
 
 			row := []string{"", "", route.Prefix, strconv.FormatBool(route.InBgp), strconv.Itoa(route.Origin), asnName}
-			if routeIdx == 0 {
+			if i == 0 {
 				row[0] = rsp.Data.Resource
 				row[1] = ipLocation
 			}

@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/cmingou/ripestat-cli/internal/ripestat"
 )
 
 func CheckArgsNonExist(args []string) bool {
@@ -82,4 +84,41 @@ func ReadInputFile(filename string) ([]string, error) {
 	}
 
 	return inputs, nil
+}
+
+// GetPrefixLength extracts the prefix length from a CIDR notation string
+// e.g., "8.8.8.0/24" returns 24, "2001:db8::/32" returns 32
+func GetPrefixLength(prefix string) int {
+	parts := strings.Split(prefix, "/")
+	if len(parts) != 2 {
+		return -1
+	}
+
+	length, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return -1
+	}
+
+	return length
+}
+
+// FindLongestPrefixIndex returns the index of the route with the longest prefix
+// from PrefixRoutingConsistency routes. Returns -1 if routes is empty.
+func FindLongestPrefixIndex(rsp *ripestat.PrefixRoutingConsistency) int {
+	if rsp == nil || len(rsp.Data.Routes) == 0 {
+		return -1
+	}
+
+	longestIdx := 0
+	longestLength := GetPrefixLength(rsp.Data.Routes[0].Prefix)
+
+	for i := 1; i < len(rsp.Data.Routes); i++ {
+		currentLength := GetPrefixLength(rsp.Data.Routes[i].Prefix)
+		if currentLength > longestLength {
+			longestLength = currentLength
+			longestIdx = i
+		}
+	}
+
+	return longestIdx
 }
