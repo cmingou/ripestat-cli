@@ -36,10 +36,10 @@ ehthumbs.db
 Thumbs.db
 
 # Project-specific binaries
-ripestat
-ripestat.exe
-ripestat_test
-ripestat_test.exe
+/ripestat
+/ripestat.exe
+/ripestat_test
+/ripestat_test.exe
 
 # Build directory
 build/
