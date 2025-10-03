@@ -33,6 +33,32 @@ go build -o ripestat main.go
 
 ## Installation
 
+### From GitHub Releases (Recommended)
+
+Download the latest pre-built binary for your platform from the [Releases page](https://github.com/cmingou/ripestat-cli/releases):
+
+**macOS:**
+```bash
+# For Intel Macs (x86_64)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Darwin_x86_64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+
+# For Apple Silicon (M1/M2/M3 - arm64)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Darwin_arm64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+```
+
+**Linux:**
+```bash
+# For x86_64 (Debian, Ubuntu, CentOS, etc.)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Linux_x86_64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+
+# For ARM64 (Raspberry Pi, ARM servers, etc.)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Linux_arm64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+```
+
 ### From Source
 
 ```bash

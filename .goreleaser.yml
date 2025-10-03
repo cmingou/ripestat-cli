@@ -1,0 +1,98 @@
+# GoReleaser configuration for ripestat-cli
+# Visit https://goreleaser.com for documentation
+
+version: 2
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # You may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  - id: ripestat
+    main: ./main.go
+    binary: ripestat
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: ripestat
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - 'Merge pull request'
+      - 'Merge branch'
+
+release:
+  github:
+    owner: cmingou
+    name: ripestat-cli
+  draft: false
+  prerelease: auto
+  name_template: "{{.ProjectName}} {{.Version}}"
+  footer: |
+    ## Installation
+
+    ### macOS
+    ```bash
+    # For Intel Macs
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Darwin_x86_64.tar.gz | tar xz
+
+    # For Apple Silicon (M1/M2/M3)
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Darwin_arm64.tar.gz | tar xz
+    ```
+
+    ### Linux
+    ```bash
+    # For x86_64 (Debian, Ubuntu, CentOS, etc.)
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Linux_x86_64.tar.gz | tar xz
+
+    # For ARM64 (Raspberry Pi, ARM servers, etc.)
+    curl -L https://github.com/cmingou/ripestat-cli/releases/download/{{ .Tag }}/ripestat_Linux_arm64.tar.gz | tar xz
+    ```
+
+    Move the binary to your PATH:
+    ```bash
+    sudo mv ripestat /usr/local/bin/
+    ```
+
+    ## Usage
+    ```bash
+    ripestat 8.8.8.8 13335 2001:db8::1
+    ```

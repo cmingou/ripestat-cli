@@ -33,6 +33,32 @@ go build -o ripestat main.go
 
 ## 安裝方式
 
+### 從 GitHub Releases 安裝（推薦）
+
+從 [Releases 頁面](https://github.com/cmingou/ripestat-cli/releases)下載適合您平台的最新預編譯二進位檔案：
+
+**macOS:**
+```bash
+# Intel Mac (x86_64)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Darwin_x86_64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+
+# Apple Silicon (M1/M2/M3 - arm64)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Darwin_arm64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+```
+
+**Linux:**
+```bash
+# x86_64 (Debian, Ubuntu, CentOS 等)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Linux_x86_64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+
+# ARM64 (Raspberry Pi, ARM 伺服器等)
+curl -L https://github.com/cmingou/ripestat-cli/releases/latest/download/ripestat_Linux_arm64.tar.gz | tar xz
+sudo mv ripestat /usr/local/bin/
+```
+
 ### 從原始碼安裝
 
 ```bash
