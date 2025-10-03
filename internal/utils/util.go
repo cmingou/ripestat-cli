@@ -103,14 +103,35 @@ func GetPrefixLength(prefix string) int {
 }
 
 // FindLongestPrefixIndex returns the index of the route with the longest prefix
-// from PrefixRoutingConsistency routes. Returns -1 if routes is empty.
+// that has in_bgp: true. If no BGP route found, returns the longest prefix regardless.
+// Returns -1 if routes is empty.
 func FindLongestPrefixIndex(rsp *ripestat.PrefixRoutingConsistency) int {
 	if rsp == nil || len(rsp.Data.Routes) == 0 {
 		return -1
 	}
 
-	longestIdx := 0
-	longestLength := GetPrefixLength(rsp.Data.Routes[0].Prefix)
+	// First pass: try to find longest prefix with in_bgp: true
+	longestIdx := -1
+	longestLength := -1
+
+	for i, route := range rsp.Data.Routes {
+		if route.InBgp {
+			currentLength := GetPrefixLength(route.Prefix)
+			if currentLength > longestLength {
+				longestLength = currentLength
+				longestIdx = i
+			}
+		}
+	}
+
+	// If found a BGP route, return it
+	if longestIdx != -1 {
+		return longestIdx
+	}
+
+	// Fallback: if no BGP route found, return longest prefix regardless
+	longestIdx = 0
+	longestLength = GetPrefixLength(rsp.Data.Routes[0].Prefix)
 
 	for i := 1; i < len(rsp.Data.Routes); i++ {
 		currentLength := GetPrefixLength(rsp.Data.Routes[i].Prefix)
