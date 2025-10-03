@@ -25,7 +25,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var maxConcurrency int
+var (
+	maxConcurrency int
+	inputFile      string
+)
 
 var rootCmd = &cobra.Command{
 	Use:  "ripestat",
@@ -36,15 +39,41 @@ var rootCmd = &cobra.Command{
 			ipv4Slice    []netip.Addr
 			ipv6Slice    []netip.Addr
 			invalidSlice []string
+			allArgs      []string
 		)
 
 		utils.SetMaxConcurrentRequests(maxConcurrency)
-		if utils.CheckArgsNonExist(args) {
-			fmt.Printf("Please check parameter\n")
+
+		// Read from file if --file flag is provided
+		if inputFile != "" {
+			fileArgs, err := utils.ReadInputFile(inputFile)
+			if err != nil {
+				fmt.Printf("Error reading file: %v\n", err)
+				os.Exit(1)
+			}
+			allArgs = append(allArgs, fileArgs...)
+		}
+
+		// Append command line arguments
+		allArgs = append(allArgs, args...)
+
+		// Check if we have any input
+		if len(allArgs) == 0 {
+			fmt.Printf("Please provide input via command line arguments or --file flag\n")
 			os.Exit(1)
 		}
 
-		for _, arg := range args {
+		// Remove duplicates while preserving order
+		seen := make(map[string]bool)
+		var uniqueArgs []string
+		for _, arg := range allArgs {
+			if !seen[arg] {
+				seen[arg] = true
+				uniqueArgs = append(uniqueArgs, arg)
+			}
+		}
+
+		for _, arg := range uniqueArgs {
 			if isASN(arg) {
 				asn, _ := strconv.Atoi(arg)
 				asnSlice = append(asnSlice, asn)
@@ -121,4 +150,5 @@ func Execute() {
 func init() {
 	maxConcurrency = utils.GetMaxConcurrentRequests()
 	rootCmd.PersistentFlags().IntVar(&maxConcurrency, "max-concurrency", maxConcurrency, "Maximum concurrent RIPEstat requests (1-8)")
+	rootCmd.PersistentFlags().StringVarP(&inputFile, "file", "f", "", "Read input from file (one IP/ASN per line)")
 }

@@ -2,6 +2,8 @@ package utils
 
 import (
 	"net/netip"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -194,4 +196,127 @@ func TestIPAddressTypes(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReadInputFile(t *testing.T) {
+	// Create a temporary directory for test files
+	tmpDir := t.TempDir()
+
+	tests := []struct {
+		name        string
+		fileContent string
+		expected    []string
+		expectError bool
+	}{
+		{
+			name: "Valid file with IPs and ASNs",
+			fileContent: `8.8.8.8
+1.1.1.1
+13335
+2001:4860:4860::8888`,
+			expected:    []string{"8.8.8.8", "1.1.1.1", "13335", "2001:4860:4860::8888"},
+			expectError: false,
+		},
+		{
+			name: "File with empty lines",
+			fileContent: `8.8.8.8
+
+1.1.1.1
+
+13335`,
+			expected:    []string{"8.8.8.8", "1.1.1.1", "13335"},
+			expectError: false,
+		},
+		{
+			name: "File with comments",
+			fileContent: `# This is a comment
+8.8.8.8
+# Another comment
+1.1.1.1
+13335`,
+			expected:    []string{"8.8.8.8", "1.1.1.1", "13335"},
+			expectError: false,
+		},
+		{
+			name: "File with mixed whitespace",
+			fileContent: `  8.8.8.8
+	1.1.1.1
+   13335   `,
+			expected:    []string{"8.8.8.8", "1.1.1.1", "13335"},
+			expectError: false,
+		},
+		{
+			name: "Empty file",
+			fileContent: ``,
+			expected:    []string{},
+			expectError: false,
+		},
+		{
+			name: "File with only comments and empty lines",
+			fileContent: `# Comment 1
+
+# Comment 2
+
+`,
+			expected:    []string{},
+			expectError: false,
+		},
+		{
+			name: "File with inline comments",
+			fileContent: `8.8.8.8
+# This is Google DNS
+1.1.1.1 # This would not be filtered - full line taken
+13335`,
+			expected:    []string{"8.8.8.8", "1.1.1.1 # This would not be filtered - full line taken", "13335"},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a temporary test file
+			testFile := filepath.Join(tmpDir, "test_input.txt")
+			err := os.WriteFile(testFile, []byte(tt.fileContent), 0644)
+			if err != nil {
+				t.Fatalf("Failed to create test file: %v", err)
+			}
+
+			// Test the function
+			result, err := ReadInputFile(testFile)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("ReadInputFile() expected error but got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("ReadInputFile() unexpected error: %v", err)
+				}
+
+				if len(result) != len(tt.expected) {
+					t.Errorf("ReadInputFile() returned %d items, expected %d", len(result), len(tt.expected))
+				}
+
+				for i, item := range result {
+					if i >= len(tt.expected) {
+						break
+					}
+					if item != tt.expected[i] {
+						t.Errorf("ReadInputFile() item[%d] = %q, expected %q", i, item, tt.expected[i])
+					}
+				}
+			}
+
+			// Clean up
+			os.Remove(testFile)
+		})
+	}
+
+	// Test non-existent file
+	t.Run("Non-existent file", func(t *testing.T) {
+		_, err := ReadInputFile(filepath.Join(tmpDir, "nonexistent.txt"))
+		if err == nil {
+			t.Errorf("ReadInputFile() expected error for non-existent file but got none")
+		}
+	})
 }

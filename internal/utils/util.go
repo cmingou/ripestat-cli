@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
 	"net/netip"
+	"os"
 	"strconv"
+	"strings"
 )
 
 func CheckArgsNonExist(args []string) bool {
@@ -37,4 +40,37 @@ func PrintInvalidArgs(invalidSlice []string) {
 	for _, invalid := range invalidSlice {
 		fmt.Printf("%v\n", invalid)
 	}
+}
+
+// ReadInputFile reads a file and returns a slice of strings
+// Each line in the file should contain one IP address or ASN
+// Empty lines and lines starting with # are ignored
+func ReadInputFile(filename string) ([]string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	var inputs []string
+	scanner := bufio.NewScanner(file)
+	lineNum := 0
+
+	for scanner.Scan() {
+		lineNum++
+		line := strings.TrimSpace(scanner.Text())
+
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		inputs = append(inputs, line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error reading file at line %d: %w", lineNum, err)
+	}
+
+	return inputs, nil
 }

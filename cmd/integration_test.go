@@ -71,7 +71,7 @@ func TestCLIEndToEnd(t *testing.T) {
 			name:      "Test no arguments",
 			args:      []string{},
 			expectErr: true,
-			contains:  []string{"Please check parameter"},
+			contains:  []string{"Please provide input via command line arguments or --file flag"},
 		},
 		{
 			name:      "Test mixed valid and invalid",
@@ -226,7 +226,7 @@ func TestCLIErrorHandling(t *testing.T) {
 			name:         "No arguments",
 			args:         []string{},
 			expectExit:   true,
-			expectOutput: "Please check parameter",
+			expectOutput: "Please provide input via command line arguments or --file flag",
 		},
 		{
 			name:         "Invalid ASN - negative",
