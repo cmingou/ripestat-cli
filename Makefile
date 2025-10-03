@@ -1,6 +1,6 @@
 # Variables for the project
 BINARY_NAME=ripestat
-VERSION=1.1.3
+VERSION=1.1.4
 BUILD_DIR=build
 
 # Default task
