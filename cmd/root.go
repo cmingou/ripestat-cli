@@ -29,6 +29,8 @@ var (
 	maxConcurrency int
 	inputFile      string
 	longestPrefix  bool
+	groupByPrefix  bool
+	groupByAsn     bool
 )
 
 var rootCmd = &cobra.Command{
@@ -95,12 +97,24 @@ var rootCmd = &cobra.Command{
 		}
 
 		if len(ipv4Slice) > 0 {
-			utils.SearchIpv4Info(ipv4Slice, longestPrefix)
+			if groupByPrefix {
+				utils.SearchIpv4InfoGroupByPrefix(ipv4Slice)
+			} else if groupByAsn {
+				utils.SearchIpv4InfoGroupByAsn(ipv4Slice)
+			} else {
+				utils.SearchIpv4Info(ipv4Slice, longestPrefix)
+			}
 			fmt.Printf("\n")
 		}
 
 		if len(ipv6Slice) > 0 {
-			utils.SearchIpv6Info(ipv6Slice, longestPrefix)
+			if groupByPrefix {
+				utils.SearchIpv6InfoGroupByPrefix(ipv6Slice)
+			} else if groupByAsn {
+				utils.SearchIpv6InfoGroupByAsn(ipv6Slice)
+			} else {
+				utils.SearchIpv6Info(ipv6Slice, longestPrefix)
+			}
 			fmt.Printf("\n")
 		}
 
@@ -153,4 +167,11 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&maxConcurrency, "max-concurrency", maxConcurrency, "Maximum concurrent RIPEstat requests (1-8)")
 	rootCmd.PersistentFlags().StringVarP(&inputFile, "file", "f", "", "Read input from file (one IP/ASN per line)")
 	rootCmd.PersistentFlags().BoolVarP(&longestPrefix, "longest-prefix", "l", false, "Show only the longest prefix route")
+	rootCmd.PersistentFlags().BoolVar(&groupByPrefix, "group-by-prefix", false, "Group results by prefix (show each unique prefix once)")
+	rootCmd.PersistentFlags().BoolVar(&groupByAsn, "group-by-asn", false, "Group results by ASN (show each unique ASN once)")
+
+	// Make these flags mutually exclusive
+	rootCmd.MarkFlagsMutuallyExclusive("longest-prefix", "group-by-prefix")
+	rootCmd.MarkFlagsMutuallyExclusive("longest-prefix", "group-by-asn")
+	rootCmd.MarkFlagsMutuallyExclusive("group-by-prefix", "group-by-asn")
 }
