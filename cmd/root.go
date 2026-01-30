@@ -28,9 +28,9 @@ import (
 var (
 	maxConcurrency int
 	inputFile      string
-	longestPrefix  bool
-	groupByPrefix  bool
-	groupByAsn     bool
+	allPrefixes   bool
+	groupByPrefix bool
+	groupByAsn    bool
 )
 
 var rootCmd = &cobra.Command{
@@ -102,7 +102,7 @@ var rootCmd = &cobra.Command{
 			} else if groupByAsn {
 				utils.SearchIpv4InfoGroupByAsn(ipv4Slice)
 			} else {
-				utils.SearchIpv4Info(ipv4Slice, longestPrefix)
+				utils.SearchIpv4Info(ipv4Slice, allPrefixes)
 			}
 			fmt.Printf("\n")
 		}
@@ -113,7 +113,7 @@ var rootCmd = &cobra.Command{
 			} else if groupByAsn {
 				utils.SearchIpv6InfoGroupByAsn(ipv6Slice)
 			} else {
-				utils.SearchIpv6Info(ipv6Slice, longestPrefix)
+				utils.SearchIpv6Info(ipv6Slice, allPrefixes)
 			}
 			fmt.Printf("\n")
 		}
@@ -166,12 +166,12 @@ func init() {
 	maxConcurrency = utils.GetMaxConcurrentRequests()
 	rootCmd.PersistentFlags().IntVar(&maxConcurrency, "max-concurrency", maxConcurrency, "Maximum concurrent RIPEstat requests (1-8)")
 	rootCmd.PersistentFlags().StringVarP(&inputFile, "file", "f", "", "Read input from file (one IP/ASN per line)")
-	rootCmd.PersistentFlags().BoolVarP(&longestPrefix, "longest-prefix", "l", false, "Show only the longest prefix route")
+	rootCmd.PersistentFlags().BoolVarP(&allPrefixes, "all-prefixes", "a", false, "Show all prefix routes (default shows only the longest BGP prefix)")
 	rootCmd.PersistentFlags().BoolVar(&groupByPrefix, "group-by-prefix", false, "Group results by prefix (show each unique prefix once)")
 	rootCmd.PersistentFlags().BoolVar(&groupByAsn, "group-by-asn", false, "Group results by ASN (show each unique ASN once)")
 
 	// Make these flags mutually exclusive
-	rootCmd.MarkFlagsMutuallyExclusive("longest-prefix", "group-by-prefix")
-	rootCmd.MarkFlagsMutuallyExclusive("longest-prefix", "group-by-asn")
+	rootCmd.MarkFlagsMutuallyExclusive("all-prefixes", "group-by-prefix")
+	rootCmd.MarkFlagsMutuallyExclusive("all-prefixes", "group-by-asn")
 	rootCmd.MarkFlagsMutuallyExclusive("group-by-prefix", "group-by-asn")
 }

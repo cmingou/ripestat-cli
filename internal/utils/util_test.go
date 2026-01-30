@@ -44,7 +44,7 @@ func TestCnovertStringToAsn(t *testing.T) {
 		{"Valid ASN - 1", "1", 1, false},
 		{"Valid ASN - 65535", "65535", 65535, false},
 		{"Valid ASN - 4294967295", "4294967295", 4294967295, false},
-		
+
 		// Invalid ASNs
 		{"Invalid ASN - Zero", "0", 0, true},
 		{"Invalid ASN - Negative", "-1", 0, true},
@@ -58,7 +58,7 @@ func TestCnovertStringToAsn(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := CnovertStringToAsn(tt.input)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Errorf("CnovertStringToAsn(%q) expected error but got none", tt.input)
@@ -94,7 +94,7 @@ func TestCnovertStringToIp(t *testing.T) {
 		{"Valid IPv4 - Link Local", "169.254.1.1", false},
 		{"Valid IPv4 - Broadcast", "255.255.255.255", false},
 		{"Valid IPv4 - Zero", "0.0.0.0", false},
-		
+
 		// Valid IPv6 addresses
 		{"Valid IPv6 - Full", "2001:0db8:85a3:0000:0000:8a2e:0370:7334", false},
 		{"Valid IPv6 - Compressed", "2001:db8:85a3::8a2e:370:7334", false},
@@ -104,7 +104,7 @@ func TestCnovertStringToIp(t *testing.T) {
 		{"Valid IPv6 - Cloudflare DNS", "2606:4700:4700::1111", false},
 		{"Valid IPv6 - Link local", "fe80::1", false},
 		{"Valid IPv6 - IPv4 mapped", "::ffff:192.168.1.1", false},
-		
+
 		// Invalid IP addresses
 		{"Invalid IP - Out of range IPv4", "256.1.1.1", true},
 		{"Invalid IP - Negative IPv4", "-1.1.1.1", true},
@@ -120,7 +120,7 @@ func TestCnovertStringToIp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := CnovertStringToIp(tt.input)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Errorf("CnovertStringToIp(%q) expected error but got none", tt.input)
@@ -135,7 +135,7 @@ func TestCnovertStringToIp(t *testing.T) {
 				if !result.IsValid() {
 					t.Errorf("CnovertStringToIp(%q) expected valid IP but got invalid", tt.input)
 				}
-				
+
 				// Verify the result matches the input
 				expectedAddr, _ := netip.ParseAddr(tt.input)
 				if result != expectedAddr {
@@ -148,11 +148,11 @@ func TestCnovertStringToIp(t *testing.T) {
 
 func TestIPAddressTypes(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		isV4     bool
-		isV6     bool
-		isPrivate bool
+		name       string
+		input      string
+		isV4       bool
+		isV6       bool
+		isPrivate  bool
 		isLoopback bool
 	}{
 		// IPv4 tests
@@ -163,7 +163,7 @@ func TestIPAddressTypes(t *testing.T) {
 		{"IPv4 Private - Class C", "192.168.1.1", true, false, true, false},
 		{"IPv4 Loopback", "127.0.0.1", true, false, false, true},
 		{"IPv4 Link Local", "169.254.1.1", true, false, false, false},
-		
+
 		// IPv6 tests
 		{"IPv6 Public - Google DNS", "2001:4860:4860::8888", false, true, false, false},
 		{"IPv6 Loopback", "::1", false, true, false, true},
@@ -182,15 +182,15 @@ func TestIPAddressTypes(t *testing.T) {
 			if addr.Is4() != tt.isV4 {
 				t.Errorf("Address %q Is4() = %v, expected %v", tt.input, addr.Is4(), tt.isV4)
 			}
-			
+
 			if addr.Is6() != tt.isV6 {
 				t.Errorf("Address %q Is6() = %v, expected %v", tt.input, addr.Is6(), tt.isV6)
 			}
-			
+
 			if addr.IsPrivate() != tt.isPrivate {
 				t.Errorf("Address %q IsPrivate() = %v, expected %v", tt.input, addr.IsPrivate(), tt.isPrivate)
 			}
-			
+
 			if addr.IsLoopback() != tt.isLoopback {
 				t.Errorf("Address %q IsLoopback() = %v, expected %v", tt.input, addr.IsLoopback(), tt.isLoopback)
 			}
@@ -246,7 +246,7 @@ func TestReadInputFile(t *testing.T) {
 			expectError: false,
 		},
 		{
-			name: "Empty file",
+			name:        "Empty file",
 			fileContent: ``,
 			expected:    []string{},
 			expectError: false,

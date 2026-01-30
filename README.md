@@ -96,6 +96,32 @@ The tool accepts multiple arguments and automatically detects their types:
 ./ripestat 1.1.1.1 15169 8.8.8.8      # Mixed input types
 ```
 
+### Options
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--all-prefixes` | `-a` | Show all prefix routes (default shows only the longest BGP prefix) |
+| `--group-by-prefix` | | Group results by prefix (show each unique prefix once) |
+| `--group-by-asn` | | Group results by ASN (show each unique ASN once) |
+| `--file` | `-f` | Read input from file (one IP/ASN per line) |
+| `--max-concurrency` | | Maximum concurrent RIPEstat requests (1-8) |
+
+```bash
+# Default: show only the longest BGP prefix per IP
+./ripestat 8.8.8.8
+
+# Show all prefix routes
+./ripestat -a 8.8.8.8
+./ripestat --all-prefixes 140.113.1.1
+
+# Group by prefix or ASN
+./ripestat --group-by-prefix 8.8.8.8 1.1.1.1
+./ripestat --group-by-asn 8.8.8.8 1.1.1.1
+
+# Read from file
+./ripestat -f ips.txt
+```
+
 ### Example Output
 
 #### ASN Information
@@ -160,7 +186,6 @@ This tool integrates with multiple RIPEstat API endpoints:
 ```bash
 # Development workflow
 go build -o ripestat main.go           # Quick build
-./test_cli.sh                          # Quick functionality test
 
 # Comprehensive testing
 go test ./... -v                       # Run all tests
@@ -184,8 +209,6 @@ RIPEstat limits each IP address to eight concurrent requests. The CLI batches lo
 - **Fine-tuned pooling** – idle and active connection caps mirror the 8-stream concurrency guard so the transport does not overrun provider limits.
 - **Debug visibility** – export `RIPESTAT_DEBUG_HTTP=1` to log the protocol negotiated per request (e.g. `proto=HTTP/2.0`) to stderr without changing CLI output.
 - **Sanity check support** – verify the upstream endpoint with `curl --http2 -I https://stat.ripe.net` (network access required) before attributing slowdowns to the client.
-- **Local benchmarking** – run `./bench_http2.sh ./ripestat 13335 15169 8.8.8.8` (or your own dataset) to compare cold vs warm HTTP/2 runs; override `BENCH_RUNS` or `RIPESTAT_MAX_CONCURRENCY` to probe different loads.
-
 ### HTTP/2 diagnostics
 
 ```bash
@@ -201,7 +224,6 @@ If the test reports a skip, the local sandbox denied creating the loopback HTTP/
 
 ```
 ├── main.go                    # Application entry point
-├── test_cli.sh               # Quick functionality test script
 ├── cmd/
 │   ├── root.go              # Main CLI logic (Cobra framework)
 │   ├── root_test.go         # Input validation tests
@@ -210,9 +232,13 @@ If the test reports a skip, the local sandbox denied creating the loopback HTTP/
 │   ├── ripestat/            # API client package
 │   │   ├── api.go          # HTTP client and API functions
 │   │   ├── api_test.go     # API integration tests
+│   │   ├── http_client.go  # Shared HTTP client with HTTP/2 support
+│   │   ├── http_client_test.go
+│   │   ├── logging.go      # Debug logging utilities
 │   │   └── structs.go      # JSON response structures
 │   └── utils/               # Business logic utilities
 │       ├── asn.go          # ASN information processing
+│       ├── concurrency.go  # Concurrent API request management
 │       ├── ipv4.go         # IPv4 address processing
 │       ├── ipv6.go         # IPv6 address processing
 │       ├── util.go         # Common utility functions
@@ -236,9 +262,6 @@ The project includes a comprehensive test suite ensuring reliability:
 ### Running Tests
 
 ```bash
-# Quick functionality check
-./test_cli.sh
-
 # All tests with verbose output
 go test ./... -v
 

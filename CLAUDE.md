@@ -51,9 +51,6 @@ go test ./internal/utils/ -v
 
 # Run API client tests
 go test ./internal/ripestat/ -v
-
-# Quick CLI functionality check
-./test_cli.sh
 ```
 
 ### Building

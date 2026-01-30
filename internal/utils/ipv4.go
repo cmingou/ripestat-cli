@@ -25,7 +25,7 @@ type ASNInfo struct {
 	ASName string
 }
 
-func SearchIpv4Info(ipv4s []netip.Addr, longestPrefix bool) {
+func SearchIpv4Info(ipv4s []netip.Addr, allPrefixes bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"IP", "Location", "Prefix", "In BGP", "AS Number", "AS Name"})
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
@@ -71,17 +71,17 @@ func SearchIpv4Info(ipv4s []netip.Addr, longestPrefix bool) {
 
 		rsp := routingConsistency
 
-		// Filter to longest prefix if flag is set
+		// Default: show only the longest BGP prefix; --all-prefixes shows all routes
 		var routesToProcess []int
-		if longestPrefix {
-			longestIdx := FindLongestPrefixIndex(rsp)
-			if longestIdx != -1 {
-				routesToProcess = []int{longestIdx}
-			}
-		} else {
+		if allPrefixes {
 			routesToProcess = make([]int, len(rsp.Data.Routes))
 			for i := range rsp.Data.Routes {
 				routesToProcess[i] = i
+			}
+		} else {
+			longestIdx := FindLongestPrefixIndex(rsp)
+			if longestIdx != -1 {
+				routesToProcess = []int{longestIdx}
 			}
 		}
 

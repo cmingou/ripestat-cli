@@ -18,7 +18,7 @@ func TestIsASN(t *testing.T) {
 		{"Valid ASN - Min value", "0", true},
 		{"Valid ASN - Max value", "4294967295", true},
 		{"Valid ASN - 32768", "32768", true},
-		
+
 		// Invalid ASNs
 		{"Invalid ASN - Negative", "-1", false},
 		{"Invalid ASN - Above max", "4294967296", false},
@@ -50,7 +50,7 @@ func TestIsIPv4(t *testing.T) {
 		{"Valid IPv4 - Cloudflare DNS", "1.1.1.1", true},
 		{"Valid IPv4 - OpenDNS", "208.67.222.222", true},
 		{"Valid IPv4 - Quad9", "9.9.9.9", true},
-		
+
 		// Valid private IPv4 addresses (RFC 1918)
 		{"Valid IPv4 - Private Class A", "10.0.0.1", true},
 		{"Valid IPv4 - Private Class A Max", "10.255.255.254", true},
@@ -59,15 +59,15 @@ func TestIsIPv4(t *testing.T) {
 		{"Valid IPv4 - Private Class B Max", "172.31.255.254", true},
 		{"Valid IPv4 - Private Class C", "192.168.1.1", true},
 		{"Valid IPv4 - Private Class C Alt", "192.168.0.254", true},
-		
+
 		// Loopback and special addresses
 		{"Valid IPv4 - Localhost", "127.0.0.1", true},
 		{"Valid IPv4 - Broadcast", "255.255.255.255", true},
 		{"Valid IPv4 - Network zero", "0.0.0.0", true},
-		
+
 		// Link-local addresses (RFC 3927)
 		{"Valid IPv4 - Link Local", "169.254.1.1", true},
-		
+
 		// Invalid IPv4 addresses
 		{"Invalid IPv4 - Out of range octet", "256.1.1.1", false},
 		{"Invalid IPv4 - Negative octet", "-1.1.1.1", false},
@@ -107,11 +107,11 @@ func TestIsIPv6(t *testing.T) {
 		{"Valid IPv6 - Link local", "fe80::1", true},
 		{"Valid IPv6 - Unique local", "fc00::1", true},
 		{"Valid IPv6 - Documentation", "2001:db8::1", true},
-		
+
 		// IPv4-mapped IPv6 addresses
 		{"Valid IPv6 - IPv4 mapped", "::ffff:192.168.1.1", true},
 		{"Valid IPv6 - IPv4 compatible", "::192.168.1.1", true},
-		
+
 		// Invalid IPv6 addresses
 		{"Invalid IPv6 - Too many groups", "2001:0db8:85a3:0000:0000:8a2e:0370:7334:extra", false},
 		{"Invalid IPv6 - Invalid characters", "2001:0db8:85a3:0000:0000:8a2e:0370:733g", false},
@@ -179,9 +179,9 @@ func TestInputClassification(t *testing.T) {
 			if ipv6Result {
 				trueCount++
 			}
-			
+
 			if trueCount > 1 {
-				t.Errorf("Input %q classified as multiple types: ASN=%v, IPv4=%v, IPv6=%v", 
+				t.Errorf("Input %q classified as multiple types: ASN=%v, IPv4=%v, IPv6=%v",
 					tt.input, asnResult, ipv4Result, ipv6Result)
 			}
 		})

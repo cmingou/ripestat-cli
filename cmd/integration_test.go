@@ -19,10 +19,10 @@ func TestCLIEndToEnd(t *testing.T) {
 	defer os.Remove("../ripestat_test")
 
 	tests := []struct {
-		name       string
-		args       []string
-		expectErr  bool
-		contains   []string // Strings that should be present in output
+		name        string
+		args        []string
+		expectErr   bool
+		contains    []string // Strings that should be present in output
 		notContains []string // Strings that should NOT be present
 	}{
 		{
@@ -126,23 +126,23 @@ func TestCLITableFormat(t *testing.T) {
 	defer os.Remove("../ripestat_test")
 
 	tests := []struct {
-		name string
-		args []string
+		name              string
+		args              []string
 		checkTableHeaders []string
 	}{
 		{
-			name: "ASN table format",
-			args: []string{"13335"},
+			name:              "ASN table format",
+			args:              []string{"13335"},
 			checkTableHeaders: []string{"AS", "COUNTRY", "RIR", "AS NAME"},
 		},
 		{
-			name: "IPv4 table format", 
-			args: []string{"8.8.8.8"},
+			name:              "IPv4 table format",
+			args:              []string{"8.8.8.8"},
 			checkTableHeaders: []string{"IP", "LOCATION", "PREFIX", "IN BGP", "AS NUMBER", "AS NAME"},
 		},
 		{
-			name: "IPv6 table format",
-			args: []string{"2001:4860:4860::8888"},
+			name:              "IPv6 table format",
+			args:              []string{"2001:4860:4860::8888"},
 			checkTableHeaders: []string{"IP", "LOCATION", "PREFIX", "IN BGP", "AS NUMBER", "AS NAME"},
 		},
 	}
@@ -159,7 +159,7 @@ func TestCLITableFormat(t *testing.T) {
 			}
 
 			output := stdout.String()
-			
+
 			// Check that all expected table headers are present
 			for _, header := range tt.checkTableHeaders {
 				if !strings.Contains(output, header) {
@@ -235,7 +235,7 @@ func TestCLIErrorHandling(t *testing.T) {
 			expectOutput: "Invalid",
 		},
 		{
-			name:         "Invalid ASN - too large", 
+			name:         "Invalid ASN - too large",
 			args:         []string{"4294967296"},
 			expectExit:   false,
 			expectOutput: "Invalid",
@@ -287,9 +287,9 @@ func TestCLIRegressionBaseline(t *testing.T) {
 
 	// Test with known stable inputs and verify key characteristics
 	testCases := []struct {
-		name     string
-		args     []string
-		checks   func(t *testing.T, output string)
+		name   string
+		args   []string
+		checks func(t *testing.T, output string)
 	}{
 		{
 			name: "Cloudflare ASN baseline",
@@ -333,19 +333,19 @@ func TestCLIRegressionBaseline(t *testing.T) {
 				// Should contain both ASN and IP information
 				asnElements := []string{"13335", "CLOUDFLARENET"}
 				ipElements := []string{"8.8.8.8", "15169"}
-				
+
 				for _, element := range asnElements {
 					if !strings.Contains(output, element) {
 						t.Errorf("Missing ASN element '%s' in mixed output", element)
 					}
 				}
-				
+
 				for _, element := range ipElements {
 					if !strings.Contains(output, element) {
 						t.Errorf("Missing IP element '%s' in mixed output", element)
 					}
 				}
-				
+
 				// Should have multiple sections (ASN table + IP table)
 				tables := strings.Count(output, "|")
 				if tables < 4 { // Each table should have multiple | separators

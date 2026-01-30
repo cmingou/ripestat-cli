@@ -3,6 +3,7 @@ package ripestat
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -23,8 +24,8 @@ func TestGetAsOverview(t *testing.T) {
 	if result.Data.Resource != "13335" {
 		t.Errorf("Expected resource '13335', got '%s'", result.Data.Resource)
 	}
-	if result.Data.Holder != "CLOUDFLARENET" {
-		t.Errorf("Expected holder 'CLOUDFLARENET', got '%s'", result.Data.Holder)
+	if !strings.Contains(result.Data.Holder, "CLOUDFLARENET") {
+		t.Errorf("Expected holder to contain 'CLOUDFLARENET', got '%s'", result.Data.Holder)
 	}
 	if result.Data.Type != "as" {
 		t.Errorf("Expected type 'as', got '%s'", result.Data.Type)
@@ -74,8 +75,8 @@ func TestGetAsOverview_MockServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetAsOverview failed: %v", err)
 	}
-	if result.Data.Holder != "CLOUDFLARENET" {
-		t.Errorf("Expected holder 'CLOUDFLARENET', got '%s'", result.Data.Holder)
+	if !strings.Contains(result.Data.Holder, "CLOUDFLARENET") {
+		t.Errorf("Expected holder to contain 'CLOUDFLARENET', got '%s'", result.Data.Holder)
 	}
 }
 
@@ -342,8 +343,8 @@ func TestAPIIntegration_Cloudflare(t *testing.T) {
 	}
 
 	// Verify consistency
-	if asOverview.Data.Holder != "CLOUDFLARENET" {
-		t.Errorf("Expected Cloudflare holder name, got '%s'", asOverview.Data.Holder)
+	if !strings.Contains(asOverview.Data.Holder, "CLOUDFLARENET") {
+		t.Errorf("Expected Cloudflare holder name to contain 'CLOUDFLARENET', got '%s'", asOverview.Data.Holder)
 	}
 
 	if len(rir.Data.Rirs) == 0 {

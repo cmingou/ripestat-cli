@@ -1,10 +1,12 @@
 package ripestat
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 func GetAsOverview(as int) (*AsOverview, error) {
@@ -97,23 +99,49 @@ func GetIpGeoLocation(resource string) (string, error) {
 }
 
 func getHttpGetResponse(url string) ([]byte, error) {
+	const maxRetries = 3
 	client := getHTTPClient()
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create HTTP GET request: %v", err)
+
+	var lastErr error
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			backoff := time.Duration(1<<(attempt-1)) * time.Second
+			debugf("Retrying GET %s (attempt %d/%d) after %v", url, attempt+1, maxRetries+1, backoff)
+			time.Sleep(backoff)
+		}
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to create HTTP GET request: %v", err)
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			lastErr = fmt.Errorf("Failed to send request: %v", err)
+			continue
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			lastErr = fmt.Errorf("Failed to read response body: %v", err)
+			continue
+		}
+
+		debugf("GET %s => %s (proto=%s)", url, resp.Status, resp.Proto)
+
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500 {
+			lastErr = fmt.Errorf("HTTP %d from %s", resp.StatusCode, url)
+			continue
+		}
+
+		if len(body) > 0 && bytes.HasPrefix(bytes.TrimSpace(body), []byte("<")) {
+			lastErr = fmt.Errorf("received HTML response instead of JSON from %s", url)
+			continue
+		}
+
+		return body, nil
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to send request: %v", err)
-	}
-	defer resp.Body.Close()
-	debugf("GET %s => %s (proto=%s)", url, resp.Status, resp.Proto)
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read response body: %v", err)
-	}
-
-	return body, nil
+	return nil, lastErr
 }
