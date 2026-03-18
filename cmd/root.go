@@ -21,6 +21,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/cmingou/ripestat-cli/internal/ripestat"
 	"github.com/cmingou/ripestat-cli/internal/utils"
 	"github.com/spf13/cobra"
 )
@@ -46,6 +47,7 @@ var rootCmd = &cobra.Command{
 		)
 
 		utils.SetMaxConcurrentRequests(maxConcurrency)
+		ripestat.SetMaxConcurrentHTTPRequests(maxConcurrency)
 
 		// Read from file if --file flag is provided
 		if inputFile != "" {
@@ -153,6 +155,10 @@ func isIPv6(arg string) bool {
 	}
 
 	return ip.Is6()
+}
+
+func SetVersion(v string) {
+	rootCmd.Version = v
 }
 
 func Execute() {

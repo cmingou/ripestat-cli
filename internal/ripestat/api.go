@@ -6,8 +6,43 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
+
+var (
+	httpSemMu sync.RWMutex
+	httpSem   chan struct{} // nil = no limit
+)
+
+// SetMaxConcurrentHTTPRequests sets the global HTTP request concurrency limit.
+func SetMaxConcurrentHTTPRequests(n int) {
+	httpSemMu.Lock()
+	defer httpSemMu.Unlock()
+	if n <= 0 {
+		httpSem = nil
+		return
+	}
+	httpSem = make(chan struct{}, n)
+}
+
+func acquireHTTPSlot() {
+	httpSemMu.RLock()
+	sem := httpSem
+	httpSemMu.RUnlock()
+	if sem != nil {
+		sem <- struct{}{}
+	}
+}
+
+func releaseHTTPSlot() {
+	httpSemMu.RLock()
+	sem := httpSem
+	httpSemMu.RUnlock()
+	if sem != nil {
+		<-sem
+	}
+}
 
 func GetAsOverview(as int) (*AsOverview, error) {
 	url := fmt.Sprintf("https://stat.ripe.net/data/as-overview/data.json?resource=AS%v", as)
@@ -99,6 +134,9 @@ func GetIpGeoLocation(resource string) (string, error) {
 }
 
 func getHttpGetResponse(url string) ([]byte, error) {
+	acquireHTTPSlot()
+	defer releaseHTTPSlot()
+
 	const maxRetries = 3
 	client := getHTTPClient()
 

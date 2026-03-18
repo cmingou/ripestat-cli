@@ -1,6 +1,6 @@
 # Variables for the project
 BINARY_NAME=ripestat
-VERSION=1.1.5
+VERSION=1.2.0
 BUILD_DIR=build
 
 # Default task
@@ -12,11 +12,11 @@ clean:
 
 # Build for Mac (darwin)
 darwin:
-	GOOS=darwin GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64-$(VERSION) main.go
+	GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=$(VERSION)" -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64-$(VERSION) main.go
 
 # Build for Linux (amd64)
 linux:
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64-$(VERSION) main.go
+	GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$(VERSION)" -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64-$(VERSION) main.go
 
 # Install locally
 install:
